@@ -1,0 +1,23 @@
+title: Zcoding4mer Blog
+email: Zcoding4mer@outlook.com
+author: Zcoding4mer
+description: >-
+  Hello World!
+  I'm zcoding4mer, whose a junior front-end engineer.
+  I will share someting i learned, about javascript and some other computer technologies.
+url: "zcoding4mer.github.io"
+github_username:  Zcoding4mer
+permalink: /:categories/:slug
+
+exclude:
+  - .sass-cache/
+  - .jekyll-cache/
+  - gemfiles/
+  - Gemfile
+  - Gemfile.lock
+  - node_modules/
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/
+  - README.md
