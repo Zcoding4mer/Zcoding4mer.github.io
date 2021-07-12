@@ -92,3 +92,37 @@ promise reject 函数的length属性值是1
     16. 返回undefined
 
 promise resolve 函数的length属性值是1
+
+## 27.2.3 The Promise Constructor
+
+Promise构造器：
+
+    - 是规范中语法中明确定义的对象Promise
+    - 是global Object的属性Promise的初始值
+    - 不能被当作函数使用，如果这样做了会抛出错误
+    - 是可以用来继承的。在定义类时可以跟在extends后面使用。子类为了继承Promise的行为，必须在构造器内使用super方法去调用Promise的构造器，这样可以初始化子类实例为了支持Promise和Promise.prototype中的内建方法所必要的内部状态
+
+### 27.2.3.1 Promise(executor)
+
+当promise函数被调用，并且传入参数executor，以下步骤会执行：
+
+    1. 如果NewTarget是undefined，抛出TypeError错误（未使用new的情况）
+    2. 使用IsCallable判断executor是否可以执行，如果不能执行，抛出TypeError错误
+    3. 声明promise，值是OrdinaryCreateFromConstructor(NewTarget, "%Promise.prototype%", « [[PromiseState]], [[PromiseResult]], [[PromiseFulfillReactions]], [[PromiseRejectReactions]], [[PromiseIsHandled]] »)的运行结果
+    4. 设置promise.[[PromiseState]]为pending
+    5. 设置promise.[[PromiseFulfillReactions]] 为空的List
+    6. 设置promise.[[PromiseRejectReactions]] 为空的List
+    7. 设置promise.[[PromiseHandleed]] 为false
+    8. 声明resolvingFunctions，值是CreateResolvingFunctions(promise)的运行结果（结果是该promise的两个置值器）
+    9. 声明completion，值是Call(executor, undefined, « resolvingFunctions.[[Resolve]], resolvingFunctions.[[Reject]] »)的执行结果（实际执行的是executor函数）
+    10. 如果completion是abrupt completion（执行executor中出错），则
+        1. 执行 Call(resolvingFunctions.[[Reject]], undefined, « completion.[[Value]] ») （实际执行的是promise的reject置值器，并将上一步的执行结果中的Value值作为rejct的reason）
+    11. 返回promise
+
+>executor必须是函数类型，调用它是为了代表新建的Promise去初始化和获取可能的延迟操作的完成。调用executor时会被传入resolve和reject两个参数。这些函数用于报告延迟操作是完成了或是失败了。executor返回了结果，并不意味着延迟操作完成了，只是意味请求执行延迟操作被接受了。
+>
+>传给executor的resolve函数接受一个参数。executor如果调用resolve函数，则表明它希望解决相关联的Promise。传给resolve的参数会被作为延迟操作的值，该参数既可以是实际完成值，也可以是另一个Promise对象状态为fulfilled时的值。
+>
+>传给executor的reject函数接受一个参数。executor如果调用reject函数，则表明它希望拒绝相关联的Promise，并且永远不会再变为fulfilled状态。传给reject的参数会被作为这个promise的拒绝值，一般是一个Error对象。
+>
+>传给executor的resolve和reject函数都有能力去真正的解决和拒绝相关联的promise。子类如果传入自定义的resolve和reject函数，构造器可能会有不同的表现。
