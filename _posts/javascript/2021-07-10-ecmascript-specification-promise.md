@@ -126,3 +126,30 @@ Promise构造器：
 >传给executor的reject函数接受一个参数。executor如果调用reject函数，则表明它希望拒绝相关联的Promise，并且永远不会再变为fulfilled状态。传给reject的参数会被作为这个promise的拒绝值，一般是一个Error对象。
 >
 >传给executor的resolve和reject函数都有能力去真正的解决和拒绝相关联的promise。子类如果传入自定义的resolve和reject函数，构造器可能会有不同的表现。
+
+## 27.2.4 Properties of the Promise Constructor
+
+Promise构造器是：
+  - 是规范中明确定义的对象Function.prototype，拥有[[Prototype]]内部插槽
+  - 有以下的属性
+
+### 27.2.4.6 Promise.reject(r)
+
+reject方法返回一个用传入的参数拒绝的promise
+
+  1. C为this的值
+  2. promiseCapability为使用NewPromiseCapality(C)的结果
+  3. 执行Call(promiseCapabilit.[[Reject]], undefined, <<r>>)(设置新创建的promise状态为rejected)
+  4. 返回promiseCapability.[[Promise]](返回新创建的promise)
+
+>为满足Promise构造器的参数要求，reject方法期望它的this值是一个构造函数
+
+### 27.2.4.7
+
+resolve方法返回一个用传入的参数解决的promise，如果传入的参数是一个promise，则会返回该参数
+
+  1. C为this的值
+  2. 使用Type(C)判断C是否是Object类型，如果不是，则抛出TypeError错误
+  3. 返回执行PromiseResolve(C, x)的结果（返回一个解决的promise）
+
+>为满足Promise构造器的参数要求，reject方法期望它的this值是一个构造函数
