@@ -9,6 +9,8 @@ url: "zcoding4mer.github.io"
 github_username:  Zcoding4mer
 permalink: /:categories/:slug
 
+baidu_id: 9ed8e83d044bbcad101ac679a41a3269
+
 exclude:
   - .sass-cache/
   - .jekyll-cache/
