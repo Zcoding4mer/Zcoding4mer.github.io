@@ -153,3 +153,58 @@ resolve方法返回一个用传入的参数解决的promise，如果传入的参
   3. 返回执行PromiseResolve(C, x)的结果（返回一个解决的promise）
 
 >为满足Promise构造器的参数要求，reject方法期望它的this值是一个构造函数
+
+## 27.2.5 Properties of the Promise Prototype Object
+
+Pomise原型对象：
+
+ - 是规范中明确定义的对象Promise.prototype
+ - 有[[Prototype]]内部插槽，值是Object.prototype
+ - 是一个普通对象
+ - 任何Promise实例中该对象都不含有[[PromiseState]]及其他内部插槽
+
+### 27.2.5.4 Promise.prototype.then(onFulfilled, onRejected)
+
+传入参数onFulfilled和onRejected调用then方法时，会执行以下步骤：
+
+  1. promise是this的值
+  2. 使用IsPromise(promise)，判断promise是不是Promise的实例，如果不是，则抛出TypeError错误
+  3. C是SpeciesConstructor(promise, %Promise%)的执行结果（C是promise构造器）
+  4. resultCapability是NewPromiseCapability(C)的执行结果（创建了新的Promise Record，也就是新的promise）
+  5. 执行 PerformPromiseThen(promise, onFulfilled, onRejected, resultCapability)，并将执行结果返回
+
+#### 27.2.5.4.1  PerformPromiseThen ( promise, onFulfilled, onRejected [ , resultCapability ] )
+
+PerformPromiseThen抽象操作需要promise，onFulfilled，onRejected等参数，以及一个可选参数resultCapability（一个PromiseCapability Record）。在promise上执行then操作是将onFulfilled和onRejected作为它在敲定后的执行动作。如果传入了resultCapability，执行结果会保存在它的promise上。如果没有传，则会使用特定的内部操作去执行该操作，并且不关心执行的结果。当被调用时，会执行下方步骤：
+
+  1. 使用Ispromise(promise)判断promise是否为true
+  2. 如果resultCapability不存在，则
+    1. 设置resultCapability为undefined
+  3. 使用IsCallable(onFulfilled)是否可被调用，如果是false，则
+    1. 声明onFulfilledJobCallback是空
+  4. 反之，
+    1. 声明onFulfilledJobCallback，值是HostMakeJobCallback(onfulfilled)的执行结果
+  5. 使用IsCallable(onRejected是否可被调用，如果是false，则
+    1. 声明onRejectedJobCallback是空
+  6. 反之，
+    1. 声明onRejectedJobCallback，值是HostMakeJobCallback(onRejected)的执行结果
+  7. 声明fulfillReaction是PromiseReaction对象{[[Capability]]: resultCapability, [[Type]]: Fulfill, [[Handler]]: onFulfilledJobCallback}
+  8. 声明rejectReaction是PromiseReaction对象{[[Capability]]: resultCapability, [[Type]]: Reject, [[Handler]]: onRejectedJobCallback}
+  9. 如果promise.[[PromiseState]] 是pending，则
+    1. 将fulfillReaction添加到promise.[[PromiseFulfillReactions]]这个列表中的最后
+    2. 将rejectReaction添加到promise.[[PromiseRejectReactions]]这个列表中的最后
+  10. 如果promise.[[PromiseState]] 是fulfilled，则
+    1. 声明value,值是promise.[[PromiseResult]]
+    2. 声明fulfillJob，值是NewPromiseReactionJob(fulfillReaction, value)执行结果(创建微任务)
+    3. 执行HostEnqueuePromiseJob(fulfillJob.[[Job]], fulfillJob.[[Realm]])（将任务添加到微任务队列，Realm是域的意思）
+  11. 其他情况，
+    1. 判断promise.[[PromiseState]]是不是rejected
+    2. 声明reason，值是pomise.[[PromiseResult]]
+    3. 如果promise.[[PromiseIsHandled]] 是false，则执行HostPromiseRejectionTracker(promise, "handle")（告诉宿主环境，有未处理的rejected promise）
+    4. 声明rejectJob，值是NewPromiseReactionJob(rejectReaction, reason)(创建微任务)
+    5. 执行HostEnqueuePromiseJob(rejectJob.[[Job]], rejectJob.[[Realm]])（将任务添加到微任务队列，Realm是域的意思）
+  12. 设置promise.[[PromiseIsHandled]]为true
+  13. 如果resultCapability为undefined，则
+    1. 返回undefined
+  14. 其他情况
+    1. 返回resultCapability.[[Promise]]
