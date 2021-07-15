@@ -93,6 +93,41 @@ promise reject 函数的length属性值是1
 
 promise resolve 函数的length属性值是1
 
+## 27.2.2 Promise Job
+
+### 27.2.2.1 NewPromiseReactionJob(reaction, argument)
+
+抽象操作NewPromiseReactionJob需要参数reaction和argument。这返回一个Job Abstract Closure（微任务闭包），任务会执行使用合适的处理函数处理传来的参数（reaction参数里有handler函数），并用处理函数的返回值去resolve或reject相关的promise。当被调用时会执行以下步骤：
+
+  1. 声明job，这是一个新的Job Abstract Closure，没有任何参数，记录着reaction和argument，当job被被执行时会走下方的步骤：
+    1. 判断reaction是不是PromiseReaction Record
+    2. 声明promiseCapability为reaction.[[Capability]]
+    3. 声明type为reaction.[[Type]]
+    4. 声明handler为reaction.[[Handler]]
+    5. 如果handler为空，则
+      1. 如果type是Fulfill，则声明handlerResult为NormalCompletion(argument)(返回一个正常完成的记录)
+      2. 其他情况，
+        1. 判断type是不是Reject
+        2. 声明handlerResult为ThrowCompletion(argument)(返回一个异常完成的记录)
+    6. 其他情况，声明handlerResult为HostCallJobCallback(handler, undefined, <<argument>>)的执行结果（执行handler，并得到handler的执行结果）
+    7. 如果promiseCapability为undefined，则
+      1. 判断handlerResult是不是abrupt completion（判断handler执行过程是否有异常），如果不是
+      2. 返回NormalCompletion(empty)
+    8. 如果promiseCapability为Promise Capability Record，则
+      1. 如果handlerResult是abrupt completion，则
+        1. 声明status为Call(promiseCapability.[[Reject]], undefined, « handlerResult.[[Value]] »)的执行结果（把promise的状态设置为rejected，拒绝的原因是handlerResult的执行结果值）
+      2. 其他情况，
+        1. 声明status为Call(promiseCapability.[[Resolve]], undefined, « handlerResult.[[Value]] »)的执行结果（把promise的状态设置为rfulfilled，完成的结果是handlerResult的执行结果值）
+    9. 返回Completion(status)
+  2. 声明handlerRealm为null
+  3. 如果reaction.[[Handler]]不为空，则
+    1. 声明getHandlerRealmResult为GetFunctionRealm(reaction.[[Handler]].[[Callback]])的执行结果(获取handler的域)
+    2. 如果getHandlerRealmResult的值是normal completion，设置handlerRealm为getHandlerRealmResult.[[Value]]的值
+    3. 其他情况，则设置handlerRealm为the current Realm Record(将当前执行上下文的域)
+    4. 备注：handlerRealm永远不为null，除非handler是undefined，当handler是废弃的Proxy并且没有ECMAScript代码在执行，handlerRealm用来创建错误对象
+  4. 返回Record{ [[Job]]: job, [[Realm]]: handlerRealm }(创建好微任务，将包含微任务的Record返回)
+
+
 ## 27.2.3 The Promise Constructor
 
 Promise构造器：
