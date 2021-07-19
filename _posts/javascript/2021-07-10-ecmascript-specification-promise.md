@@ -1,6 +1,7 @@
 ---
 layout: post
 title:  "ECMAScript规范 Promise部分翻译"
+description: ECMAScript规范中关于Promise的翻译，包括Promise的constructor，Promise.resolve,Promise.reject,Promise.prototype.then等等，方便了解Promise生成，执行全过程
 date:   2021-07-10 23:10:05 +0800
 categories: javascript
 tags: ecma
