@@ -127,6 +127,24 @@ promise resolve 函数的length属性值是1
     4. 备注：handlerRealm永远不为null，除非handler是undefined，当handler是废弃的Proxy并且没有ECMAScript代码在执行，handlerRealm用来创建错误对象
   4. 返回Record{ [[Job]]: job, [[Realm]]: handlerRealm }(创建好微任务，将包含微任务的Record返回)
 
+### 27.2.2.2 NewPromiseResolveThenableJob(promiseToResolve, thenable, then)
+
+NewPromiseResolveThenableJob抽象操作需要promiseToResolve，thenable和then参数。当被调用的时候会执行以下步骤：
+
+  1. 声明job，这是一个新的Job Abstract Closure，没有任何参数，记录着promiseToResolve，thenable和then，当job被被执行时会走下方的步骤：
+     1. 声明resolvingFunctions，值是CreateResolvingFunctions(promiseToResolve)的结果（生成promise的置值器resolve和reject）
+     2. 声明thenCallResult，值是HostCallJobCallback(then, thenable, « resolvingFunctions.[[Resolve]], resolvingFunctions.[[Reject]] »).（执行thenable对象里的then方法）
+     3. 如果thenCallResult是abrupt Completion，则
+        1. 声明status，值是Call(resolvingFunctions.[[Reject]], undefined, « thenCallResult.[[Value]] »)的结果（使用promiseToResolve的reject置值器将promise的状态设置为rejected）
+        2. 返回Completion(status)
+     4. 返回Completion(thenCallResult)
+  2. 声明getThenRealmResult，值是GetFunctionRealm(then.[[Callback]])
+  3. 如果getThenRealmResult值是normal completion，则声明thenRealm是getThenRealmResult.[[Value]]
+  4. 否则，thenRealm为the current Realm Record
+  5. 注意：thenRealm一直不为null，当then.[[Callback]]是废弃的Proxy，没有代码执行，thenRealm用于创建错误对象
+  6. 返回Record{ [[Job]]: job, [[Realm]]: thenRealm }
+
+> 这个Job用传入的Thenable对象的then方法解决给定的promise，这个过程必须以一个Job发生，这是为了确保then方法是在周围的代码全都执行完成之后再执行。
 
 ## 27.2.3 The Promise Constructor
 
@@ -179,7 +197,7 @@ reject方法返回一个用传入的参数拒绝的promise
 
 >为满足Promise构造器的参数要求，reject方法期望它的this值是一个构造函数
 
-### 27.2.4.7
+### 27.2.4.7 Promise.resolve(x)
 
 resolve方法返回一个用传入的参数解决的promise，如果传入的参数是一个promise，则会返回该参数
 
