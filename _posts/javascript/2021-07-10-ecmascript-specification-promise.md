@@ -262,3 +262,17 @@ PerformPromiseThen抽象操作需要promise，onFulfilled，onRejected等参数�
     1. 返回undefined
   14. 其他情况
     1. 返回resultCapability.[[Promise]]
+
+## 27.2.6 Properties of Promise Instances
+
+Promise实例是普通对象，继承了Promise原型对象的属性。创建实例时会给实例在Table 72里描述的内部插槽。
+
+Table 72: Internal Slots of Promise Instances
+
+| 内部插槽           | 描述                                          |
+| -------------- | ------------------------------------------- |
+|[[PromiseState]]|是pending，fulfilled和rejected中的一个。用来决定在调用then方法时promise会执行什么操作|
+|[[PromiseResult]]|在promise状态变为fulfilled或rejected时拥有的值，只有[[PromiseState]]不是pending时才有意义|
+|[[PromiseFulfillReactions]]|一个PromiseReaction records列表，当promise从pending状态变为fulfilled状态时会被处理|
+|[[PromiseRejectReactions]]|一个PromiseReaction records列表，当promise从pending状态变为rejected状态时会被处理|
+|[[PromiseIsHandled]]|一个布尔值，代表着promise是否有过一个fulfillment或rejection handler（是否用then或catch方法给promise注册在状态是fulfilled或者rejected的情况下执行的方法）；用于追踪未处理的rejection（promise状态是rejected，但是没有用catch处理promise的结果）|
